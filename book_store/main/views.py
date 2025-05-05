@@ -39,12 +39,12 @@ def user_management(request):
         if form.is_valid():
             try:
                 user = form.save()
-                messages.success(request, f'用户{user.username}创建成功')
+                messages.success(request, f'用户 {user.username} 创建成功')
                 return redirect('user_management')
             except ValueError as e:
-                messages.error(request, str(e))
+                messages.error(request, f'创建失败：{str(e)}')
         else:
-            messages.error(request, '创建失败，请检查输入')
+            messages.error(request, f'创建失败，请检查输入：{form.errors}')
     users = User.objects.all()
     return render(request, 'user_management.html', {'form': form, 'users': users})
 
@@ -57,14 +57,14 @@ def edit_user(request, user_id):
     form = UserForm(request.POST or None, instance=user)
     if request.method == "POST":
         if form.is_valid():
-            try: 
+            try:
                 form.save()
-                messages.success(request, '用户更新成功')
+                messages.success(request, f'用户 {user.username} 更新成功')
                 return redirect('user_management')
             except ValueError as e:
                 messages.error(request, f'更新失败：{str(e)}')
         else:
-            messages.error(request, '更新失败，请检查输入')
+            messages.error(request, f'更新失败，请检查输入：{form.errors}')
     return render(request, 'edit_user.html', {'form': form, 'user': user})
 
 @login_required

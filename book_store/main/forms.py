@@ -25,7 +25,7 @@ class UserForm(forms.ModelForm):
             'age': forms.NumberInput(attrs={'class': 'form-control'}),
         }
 
-def clean_username(self):
+    def clean_username(self):
         username = self.cleaned_data['username']
         # 允许现有用户的用户名保持不变
         if self.instance and self.instance.username == username:
@@ -35,7 +35,7 @@ def clean_username(self):
             raise forms.ValidationError("该用户名已存在")
         return username
 
-def clean(self):
+    def clean(self):
         cleaned_data = super().clean()
         password = cleaned_data.get('password')
         confirm_password = cleaned_data.get('confirm_password')
@@ -48,7 +48,7 @@ def clean(self):
             raise forms.ValidationError("新用户必须设置密码")
         return cleaned_data
 
-def save(self, commit=True):
+    def save(self, commit=True):
         user = super().save(commit=False)
         password = self.cleaned_data.get('password')
         if password:
