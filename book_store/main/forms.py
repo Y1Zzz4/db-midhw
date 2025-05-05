@@ -1,5 +1,5 @@
 from django import forms
-from .models import UserManager, User, Book, Purchase
+from .models import User, Book, Purchase
 
 class UserForm(forms.ModelForm):
     password = forms.CharField(

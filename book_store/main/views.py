@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib import messages
-from .models import UserManager, User, Book, Purchase, Bill, Sale
+from .models import User, Book, Purchase, Bill, Sale
 from .forms import UserForm, BookForm, PurchaseForm 
 
 def login_view(request):
