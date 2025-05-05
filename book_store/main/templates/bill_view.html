@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}财务记录{% endblock %}
+{% block content %}
+<h2 class="mb-4">财务记录</h2>
+<form method="get" class="mb-4">
+    <div class="row">
+        <div class="col-md-3">
+            <label for="start_date" class="form-label">开始日期</label>
+            <input type="date" name="start_date" id="start_date" class="form-control" value="{{ request.GET.start_date }}">
+        </div>
+        <div class="col-md-3">
+            <label for="end_date" class="form-label">结束日期</label>
+            <input type="date" name="end_date" id="end_date" class="form-control" value="{{ request.GET.end_date }}">
+        </div>
+        <div class="col-md-2 align-self-end">
+            <button type="submit" class="btn btn-primary">查询</button>
+        </div>
+    </div>
+</form>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>类型</th>
+            <th>金额</th>
+            <th>相关信息</th>
+            <th>时间</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bill in bills %}
+            <tr>
+                <td>{{ bill.bill_type }}</td>
+                <td>{{ bill.amount }}</td>
+                <td>{{ bill.related_info }}</td>
+                <td>{{ bill.created_at }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">暂无财务记录</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}图书销售{% endblock %}
+{% block content %}
+<h2 class="mb-4">图书销售</h2>
+{% if user.user_type == 'customer' %}
+    <h3 class="mb-3">可用图书</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>书名</th>
+                <th>作者</th>
+                <th>价格</th>
+                <th>库存</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for book in books %}
+                <tr>
+                    <td>{{ book.title }}</td>
+                    <td>{{ book.author }}</td>
+                    <td>{{ book.price }}</td>
+                    <td>{{ book.stock }}</td>
+                    <td>
+                        <form method="post" action="{% url 'buy_book' book.id %}">
+                            {% csrf_token %}
+                            <input type="number" name="quantity" class="form-control d-inline w-25" min="1" max="{{ book.stock }}" required>
+                            <button type="submit" class="btn btn-sm btn-primary">购买</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">暂无图书</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <h3 class="mb-3">销售记录</h3>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>图书</th>
+                <th>数量</th>
+                <th>售价</th>
+                <th>购买者</th>
+                <th>时间</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sale in sales %}
+                <tr>
+                    <td>{{ sale.book.title }}</td>
+                    <td>{{ sale.quantity }}</td>
+                    <td>{{ sale.sale_price }}</td>
+                    <td>{{ sale.customer.real_name|default:'匿名' }}</td>
+                    <td>{{ sale.sale_time }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">暂无销售记录</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% endif %}
+{% endblock %}
