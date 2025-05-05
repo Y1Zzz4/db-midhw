@@ -11,7 +11,7 @@
 {% endif %}
 <div class="card mb-4">
     <div class="card-body">
-        <form method="post" class="needs-validation" novalidate>
+        <form method="post">
             {% csrf_token %}
             {% for field in form %}
                 <div class="mb-3">
@@ -27,19 +27,4 @@
         </form>
     </div>
 </div>
-<script>
-    (function () {
-        'use strict'
-        var forms = document.querySelectorAll('.needs-validation')
-        Array.prototype.slice.call(forms).forEach(function (form) {
-            form.addEventListener('submit', function (event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault()
-                    event.stopPropagation()
-                }
-                form.classList.add('was-validated')
-            }, false)
-        })
-    })();
-</script>
 {% endblock %}

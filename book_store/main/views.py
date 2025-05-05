@@ -10,7 +10,9 @@ def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
+        print(f"Login attempt: username={username}, password={password}")  # 调试
         user = authenticate(request, username=username, password=password)
+        print(f"Authenticate result: {user}")  # 调试
         if user is not None:
             if user.is_active:
                 login(request, user)

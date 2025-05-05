@@ -12,7 +12,7 @@
 <div class="card mb-4">
     <div class="card-body">
         <h5 class="card-title">创建新用户</h5>
-        <form method="post" class="needs-validation" novalidate>
+        <form method="post">
             {% csrf_token %}
             {% for field in form %}
                 <div class="mb-3">
@@ -60,19 +60,4 @@
         {% endfor %}
     </tbody>
 </table>
-<script>
-    (function () {
-        'use strict'
-        var forms = document.querySelectorAll('.needs-validation')
-        Array.prototype.slice.call(forms).forEach(function (form) {
-            form.addEventListener('submit', function (event) {
-                if (!form.checkValidity()) {
-                    event.preventDefault()
-                    event.stopPropagation()
-                }
-                form.classList.add('was-validated')
-            }, false)
-        })
-    })();
-</script>
 {% endblock %}

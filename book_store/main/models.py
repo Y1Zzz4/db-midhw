@@ -7,15 +7,19 @@ class UserManager(BaseUserManager):
         if not username:
             raise ValueError('用户名不能为空')
         user = self.model(username=username, real_name=real_name, **extra_fields)
-        user.set_password(password)  # 使用 Django 的密码加密
+        if password:
+            user.set_password(password)  # 使用 Django 的密码加密
+        else:
+            user.password = ''  # 确保空密码不引发错误
         user.save(using=self._db)
         return user
     
-def create_superuser(self, username, real_name, password=None, **extra_fields):
+    def create_superuser(self, username, real_name, password=None, **extra_fields):
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('user_type', 'superadmin')
+        extra_fields.setdefault('is_staff', True)
         return self.create_user(username, real_name, password, **extra_fields)
-
+    
 class User(AbstractUser):
     USER_TYPES = [
         ('superadmin', '超级管理员'),

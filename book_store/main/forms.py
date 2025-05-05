@@ -54,9 +54,10 @@ def save(self, commit=True):
         if password:
             user.set_password(password)  # 加密密码
         elif not self.instance.pk:  # 新用户未提供密码
-            raise ValueError("新用户必须提供密码")
+            raise ValueError("新用户必须设置密码")
         if commit:
             user.save()
+            print(f"Saved user: {user.username}, password: {user.password}")  # 调试
         return user
 
 class BookForm(forms.ModelForm):
