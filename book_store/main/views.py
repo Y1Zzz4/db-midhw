@@ -25,23 +25,36 @@ def home(request):
 @login_required
 def user_management(request):
     if not (request.user.is_superuser or request.user.user_type == 'superadmin'):
+        messages.error(request, '无权限访问')
         return redirect('home')
     form = UserForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        return redirect('user_management')
+    if request.method == "POST":
+        if form.is_valid():
+            try:
+                form.save()
+                messages.success(request, '用户创建成功')
+                return redirect('user_management')
+            except ValueError as e:
+                messages.error(request, str(e))
+        else:
+            messages.error(request, '创建失败，请检查输入')
     users = User.objects.all()
     return render(request, 'user_management.html', {'form': form, 'users': users})
 
 @login_required
 def edit_user(request, user_id):
     if not (request.user.is_superuser or request.user.user_type == 'superadmin'):
+        messages.error(request, '无权限访问')
         return redirect('home')
     user = get_object_or_404(User, id=user_id)
     form = UserForm(request.POST or None, instance=user)
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        return redirect('user_management')
+    if request.method == "POST":
+        if form.is_valid():
+            form.save()
+            messages.success(request, '用户更新成功')
+            return redirect('user_management')
+        else:
+            messages.error(request, '更新失败，请检查输入')
     return render(request, 'edit_user.html', {'form': form, 'user': user})
 
 @login_required
@@ -87,30 +100,30 @@ def purchase_management(request):
 
 @login_required
 def add_purchase(request):
-    if request.user.user_type not in ['superadmin', 'admin']:
+    if not (request.user.is_superuser or request.user.user_type in ['superadmin', 'admin']):
         return redirect('home')
+    form = PurchaseForm(request.POST or None)
     if request.method == "POST":
-        form = PurchaseForm(request.POST)
         if form.is_valid():
-            purchase = form.save(commit=False)
-            purchase.status = '未付款'
-            purchase.save()
+            form.save()
+            messages.success(request, '进货单创建成功')
             return redirect('purchase_management')
-    return redirect('purchase_management')
+        else:
+            messages.error(request, '创建失败，请检查输入')
+    return render(request, 'purchase_management.html', {'form': form, 'purchases': Purchase.objects.all()})
 
 @login_required
 def pay_purchase(request, purchase_id):
-    if request.user.user_type not in ['superadmin', 'admin']:
-        return redirect('home')
+    if not (request.user.is_superuser or request.user.user_type in ['superadmin', 'admin']):
+        messages.error(request, '无权限执行此操作')
+        return redirect('purchase_management')
     purchase = get_object_or_404(Purchase, id=purchase_id)
-    if purchase.status == '未付款':
-        purchase.status = '已付款'
-        purchase.save()
-        Bill.objects.create(
-            bill_type='支出',
-            amount=purchase.purchase_price * purchase.quantity,
-            related_info=f'进货: {purchase.book.title} x {purchase.quantity}'
-        )
+    if purchase.status != 'pending':
+        messages.error(request, '只能对待付款的进货单进行付款')
+        return redirect('purchase_management')
+    purchase.status = 'paid'
+    purchase.save()
+    messages.success(request, '付款成功')
     return redirect('purchase_management')
 
 @login_required

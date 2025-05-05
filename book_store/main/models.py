@@ -1,5 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+
+class UserManager(BaseUserManager):
+    def create_user(self, username, real_name, password=None, **extra_fields):
+        if not username:
+            raise ValueError('用户名不能为空')
+        user = self.model(username=username, real_name=real_name, **extra_fields)
+        user.set_password(password)  # 使用 Django 的密码加密
+        user.save(using=self._db)
+        return user
+    
+def create_superuser(self, username, real_name, password=None, **extra_fields):
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('user_type', 'superadmin')
+        return self.create_user(username, real_name, password, **extra_fields)
 
 class User(AbstractUser):
     USER_TYPES = [
@@ -7,11 +22,23 @@ class User(AbstractUser):
         ('admin', '普通管理员'),
         ('customer', '普通用户'),
     ]
+    GENDER_CHOICES = [
+        ('male', '男'),
+        ('female', '女'),
+        ('none', '无'),
+    ]
     user_type = models.CharField(max_length=20, choices=USER_TYPES,default='customer')
     real_name = models.CharField(max_length=100)
     employee_id = models.CharField(max_length=20, blank=True, null=True)
-    gender = models.CharField(max_length=10, blank=True, null=True)
+    gender = models.CharField(max_length=10, choices=GENDER_CHOICES, default='none', blank=True)
     age = models.PositiveIntegerField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['real_name']
 
     def __str__(self):
         return self.username

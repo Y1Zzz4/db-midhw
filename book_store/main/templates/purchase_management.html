@@ -2,6 +2,13 @@
 {% block title %}进货管理{% endblock %}
 {% block content %}
 <h2 class="mb-4">进货管理</h2>
+{% if messages %}
+    <div class="alert alert-info">
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+    </div>
+{% endif %}
 <div class="card mb-4">
     <div class="card-body">
         <h5 class="card-title">创建进货记录</h5>
@@ -21,13 +28,6 @@
     </div>
 </div>
 <h3 class="mb-3">进货列表</h3>
-{% if messages %}
-    <div class="alert alert-info">
-        {% for message in messages %}
-            {{ message }}
-        {% endfor %}
-    </div>
-{% endif %}
 <table class="table table-striped">
     <thead>
         <tr>
@@ -65,4 +65,19 @@
         {% endfor %}
     </tbody>
 </table>
+<script>
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })();
+</script>
 {% endblock %}
