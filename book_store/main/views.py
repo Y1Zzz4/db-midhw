@@ -145,6 +145,11 @@ def pay_purchase(request, purchase_id):
         return redirect('purchase_management')
     purchase.status = 'paid'
     purchase.save()
+    Bill.objects.create(
+        bill_type='支出',
+        amount=purchase.price * purchase.quantity,
+        related_info=f'进货: {purchase.book.title} x {purchase.quantity}'
+    )
     messages.success(request, '付款成功')
     return redirect('purchase_management')
 
