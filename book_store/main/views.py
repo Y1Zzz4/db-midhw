@@ -3,7 +3,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 from django.contrib import messages
-from .models import User, Book, Purchase, Bill, Sale
+from .models import UserManager, User, Book, Purchase, Bill, Sale
 from .forms import UserForm, BookForm, PurchaseForm 
 
 def login_view(request):
@@ -38,8 +38,8 @@ def user_management(request):
     if request.method == "POST":
         if form.is_valid():
             try:
-                form.save()
-                messages.success(request, '用户创建成功')
+                user = form.save()
+                messages.success(request, f'用户{user.username}创建成功')
                 return redirect('user_management')
             except ValueError as e:
                 messages.error(request, str(e))
@@ -57,9 +57,12 @@ def edit_user(request, user_id):
     form = UserForm(request.POST or None, instance=user)
     if request.method == "POST":
         if form.is_valid():
-            form.save()
-            messages.success(request, '用户更新成功')
-            return redirect('user_management')
+            try: 
+                form.save()
+                messages.success(request, '用户更新成功')
+                return redirect('user_management')
+            except ValueError as e:
+                messages.error(request, f'更新失败：{str(e)}')
         else:
             messages.error(request, '更新失败，请检查输入')
     return render(request, 'edit_user.html', {'form': form, 'user': user})
