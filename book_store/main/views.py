@@ -140,6 +140,9 @@ def pay_purchase(request, purchase_id):
         messages.error(request, '无权限执行此操作')
         return redirect('purchase_management')
     purchase = get_object_or_404(Purchase, id=purchase_id)
+    if purchase.status == 'returned':
+        messages.error(request, '此进货单已退货，无法付款')
+        return redirect('purchase_management')
     if purchase.status != 'pending':
         messages.error(request, '只能对待付款的进货单进行付款')
         return redirect('purchase_management')
@@ -157,14 +160,21 @@ def pay_purchase(request, purchase_id):
 @login_required
 def return_purchase(request, purchase_id):
     if request.user.user_type not in ['superadmin', 'admin']:
-        return redirect('home')
+        messages.error(request, '无权限执行此操作')
+        return redirect('purchase_management')
     purchase = get_object_or_404(Purchase, id=purchase_id)
-    if purchase.status == '未付款':
-        purchase.status = '已退货'
-        purchase.save()
+    if request.method != 'POST':
+        messages.error(request, '无效的请求方式')
+        return redirect('purchase_management')
+    if purchase.status != 'pending':
+        messages.error(request, '只能对未付款的进货单退货')
+        return redirect('purchase_management')
+    purchase.status = 'returned'
+    purchase.save()
+    messages.success(request, f'进货单 {purchase.id} 已退货')
     return redirect('purchase_management')
 
-# 入库操作（新版）
+# 入库操作
 @login_required
 def add_to_stock(request, purchase_id):
     if not (request.user.is_superuser or request.user.user_type in ['superadmin', 'admin']):
