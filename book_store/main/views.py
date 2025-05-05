@@ -7,15 +7,20 @@ from .models import User, Book, Purchase, Bill, Sale
 from .forms import UserForm, BookForm, PurchaseForm 
 
 def login_view(request):
-    if request.method == "POST":
-        username = request.POST['username']
-        password = request.POST['password']
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
         user = authenticate(request, username=username, password=password)
-        if user:
-            login(request, user)
-            return redirect('home')
+        if user is not None:
+            if user.is_active:
+                login(request, user)
+                next_url = request.GET.get('next', 'home')
+                messages.success(request, f'欢迎，{user.real_name}')
+                return redirect(next_url)
+            else:
+                messages.error(request, '用户账户已禁用')
         else:
-            return render(request, 'login.html', {'error': '用户名或密码错误'})
+            messages.error(request, '用户名或密码错误')
     return render(request, 'login.html')
 
 @login_required

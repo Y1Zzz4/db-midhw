@@ -35,6 +35,19 @@ def clean_username(self):
             raise forms.ValidationError("该用户名已存在")
         return username
 
+def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
+        if password or confirm_password:
+            if password != confirm_password:
+                raise forms.ValidationError("两次输入的密码不一致")
+            if len(password) < 6:
+                raise forms.ValidationError("密码长度至少为6位")
+        if not self.instance.pk and not password:  # 新用户必须提供密码
+            raise forms.ValidationError("新用户必须设置密码")
+        return cleaned_data
+
 def save(self, commit=True):
         user = super().save(commit=False)
         password = self.cleaned_data.get('password')
