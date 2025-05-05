@@ -2,16 +2,16 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 class User(AbstractUser):
-    ROLE_CHOICES = [
+    USER_TYPES = [
         ('superadmin', '超级管理员'),
         ('admin', '普通管理员'),
         ('customer', '普通用户'),
     ]
+    user_type = models.CharField(max_length=20, choices=USER_TYPES, default='customer')
     real_name = models.CharField(max_length=100)
     employee_id = models.CharField(max_length=20, blank=True, null=True)
     gender = models.CharField(max_length=10, blank=True, null=True)
     age = models.PositiveIntegerField(null=True, blank=True)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
 
     def __str__(self):
         return self.username
