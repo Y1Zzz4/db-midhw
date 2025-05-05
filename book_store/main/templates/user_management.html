@@ -1,14 +1,21 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
 {% block title %}用户管理{% endblock %}
 {% block content %}
 <h2 class="mb-4">用户管理</h2>
 <div class="card mb-4">
     <div class="card-body">
         <h5 class="card-title">创建新用户</h5>
-        <form method="post">
+        <form method="post" class="needs-validation" novalidate>
             {% csrf_token %}
-            {{ form|crispy }}
+            {% for field in form %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="invalid-feedback d-block">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
             <button type="submit" class="btn btn-primary">创建</button>
         </form>
     </div>
@@ -23,6 +30,7 @@
             <th>工号</th>
             <th>性别</th>
             <th>年龄</th>
+            <th>操作</th>
         </tr>
     </thead>
     <tbody>
@@ -34,12 +42,30 @@
                 <td>{{ user.employee_id|default:'无' }}</td>
                 <td>{{ user.gender }}</td>
                 <td>{{ user.age|default:'未设置' }}</td>
+                <td>
+                    <a href="{% url 'edit_user' user.id %}" class="btn btn-sm btn-warning">编辑</a>
+                </td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="6" class="text-center">暂无用户</td>
+                <td colspan="7" class="text-center">暂无用户</td>
             </tr>
         {% endfor %}
     </tbody>
 </table>
+<script>
+    (function () {
+        'use strict'
+        var forms = document.querySelectorAll('.needs-validation')
+        Array.prototype.slice.call(forms).forEach(function (form) {
+            form.addEventListener('submit', function (event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault()
+                    event.stopPropagation()
+                }
+                form.classList.add('was-validated')
+            }, false)
+        })
+    })();
+</script>
 {% endblock %}

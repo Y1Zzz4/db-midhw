@@ -2,6 +2,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
+from django.contrib import messages
 from .models import User, Book, Purchase, Bill, Sale
 from .forms import UserForm, BookForm, PurchaseForm 
 
@@ -23,17 +24,25 @@ def home(request):
 
 @login_required
 def user_management(request):
-    if request.user.user_type != 'superadmin':
+    if not (request.user.is_superuser or request.user.user_type == 'superadmin'):
         return redirect('home')
-    if request.method == "POST":
-        form = UserForm(request.POST)
-        if form.is_valid():
-            form.save()  # 密码已由模型的 save 方法加密
-            return redirect('user_management')
-    else:
-        form = UserForm()
+    form = UserForm(request.POST or None)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect('user_management')
     users = User.objects.all()
     return render(request, 'user_management.html', {'form': form, 'users': users})
+
+@login_required
+def edit_user(request, user_id):
+    if not (request.user.is_superuser or request.user.user_type == 'superadmin'):
+        return redirect('home')
+    user = get_object_or_404(User, id=user_id)
+    form = UserForm(request.POST or None, instance=user)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect('user_management')
+    return render(request, 'edit_user.html', {'form': form, 'user': user})
 
 @login_required
 def book_management(request):
@@ -56,6 +65,17 @@ def book_management(request):
         Q(author__icontains=query) | Q(publisher__icontains=query)
     )
     return render(request, 'book_management.html', {'form': form, 'books': books})
+
+@login_required
+def edit_book(request, book_id):
+    if not (request.user.is_superuser or request.user.user_type in ['superadmin', 'admin']):
+        return redirect('home')
+    book = get_object_or_404(Book, id=book_id)
+    form = BookForm(request.POST or None, instance=book)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        return redirect('book_management')
+    return render(request, 'edit_book.html', {'form': form, 'book': book})
 
 @login_required
 def purchase_management(request):
@@ -164,3 +184,21 @@ def bill_view(request):
 def logout_view(request):
     logout(request)
     return redirect('login')
+
+@login_required
+def add_to_stock(request, purchase_id):
+    if not (request.user.is_superuser or request.user.user_type in ['superadmin', 'admin']):
+        return redirect('home')
+    purchase = get_object_or_404(Purchase, id=purchase_id)
+    if purchase.status != 'paid':
+        messages.error(request, '只有已付款的进货可以入库')
+        return redirect('purchase_management')
+    if purchase.is_stocked:
+        messages.error(request, '该进货已入库')
+        return redirect('purchase_management')
+    purchase.book.stock += purchase.quantity
+    purchase.book.save()
+    purchase.is_stocked = True
+    purchase.save()
+    messages.success(request, '成功入库')
+    return redirect('purchase_management')

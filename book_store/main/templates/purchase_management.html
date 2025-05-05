@@ -1,25 +1,39 @@
 {% extends 'base.html' %}
-{% load crispy_forms_tags %}
 {% block title %}进货管理{% endblock %}
 {% block content %}
 <h2 class="mb-4">进货管理</h2>
 <div class="card mb-4">
     <div class="card-body">
-        <h5 class="card-title">添加进货</h5>
-        <form method="post" action="{% url 'add_purchase' %}">
+        <h5 class="card-title">创建进货记录</h5>
+        <form method="post" action="{% url 'add_purchase' %}" class="needs-validation" novalidate>
             {% csrf_token %}
-            {{ purchase_form|crispy }}
-            <button type="submit" class="btn btn-primary">添加</button>
+            {% for field in form %}
+                <div class="mb-3">
+                    <label for="{{ field.id_for_label }}" class="form-label">{{ field.label }}</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <div class="invalid-feedback d-block">{{ field.errors }}</div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">创建</button>
         </form>
     </div>
 </div>
 <h3 class="mb-3">进货列表</h3>
+{% if messages %}
+    <div class="alert alert-info">
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+    </div>
+{% endif %}
 <table class="table table-striped">
     <thead>
         <tr>
             <th>图书</th>
             <th>数量</th>
-            <th>进货价格</th>
+            <th>总价</th>
             <th>状态</th>
             <th>创建时间</th>
             <th>操作</th>
@@ -30,15 +44,17 @@
             <tr>
                 <td>{{ purchase.book.title }}</td>
                 <td>{{ purchase.quantity }}</td>
-                <td>{{ purchase.purchase_price }}</td>
-                <td>{{ purchase.status }}</td>
+                <td>{{ purchase.total_price }}</td>
+                <td>{{ purchase.get_status_display }}</td>
                 <td>{{ purchase.created_at }}</td>
                 <td>
-                    {% if purchase.status == '未付款' %}
+                    {% if purchase.status == 'pending' %}
                         <a href="{% url 'pay_purchase' purchase.id %}" class="btn btn-sm btn-success">付款</a>
                         <a href="{% url 'return_purchase' purchase.id %}" class="btn btn-sm btn-danger">退货</a>
-                    {% elif purchase.status == '已付款' %}
+                    {% elif purchase.status == 'paid' and not purchase.is_stocked %}
                         <a href="{% url 'add_to_stock' purchase.id %}" class="btn btn-sm btn-primary">入库</a>
+                    {% elif purchase.is_stocked %}
+                        <span class="text-muted">已入库</span>
                     {% endif %}
                 </td>
             </tr>

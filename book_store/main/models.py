@@ -25,14 +25,22 @@ class Book(models.Model):
     stock = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return f"{self.title}（{self.isbn}）"
+        return f"{self.title}({self.isbn})"
     
 class Purchase(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField()
-    purchase_price = models.DecimalField(max_digits=8, decimal_places=2)
-    status = models.CharField(max_length=20, choices=[('未付款', '未付款'), ('已付款', '已付款'), ('已退货', '已退货')])
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=20, choices=[
+        ('pending', '待付款'),
+        ('paid', '已付款'),
+        ('returned', '已退货'),
+    ], default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
+    is_stocked = models.BooleanField(default=False)  # 新增
+
+    def __str__(self):
+        return f"Purchase {self.id} - {self.book.title}"
 
 class Sale(models.Model):
     book = models.ForeignKey(Book, on_delete=models.CASCADE)
