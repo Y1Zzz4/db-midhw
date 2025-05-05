@@ -17,6 +17,6 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('', include('main.urls')),
+    path('admin/', admin.site.urls),   # 配置管理员后台路径（/admin/）
+    path('', include('main.urls')),    # 将根路径（/）的请求交由 main 应用中的 urls.py 处理
 ]
