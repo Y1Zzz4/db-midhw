@@ -5,11 +5,17 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),  
     # 用户登录页面
 
+    path('register/', views.register_view, name='register'),
+    #注册
+
     path('logout/', views.logout_view, name='logout'),  
     # 用户注销操作
 
     path('', views.home, name='home'),  
     # 系统首页（默认路径）
+
+    path('profile/edit/', views.edit_profile, name='edit_profile'),
+    #个人信息编辑
 
     path('user-management/', views.user_management, name='user_management'),  
     # 用户管理界面（查看所有用户）

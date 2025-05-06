@@ -15,6 +15,12 @@ class UserForm(forms.ModelForm):
         widget=forms.PasswordInput(attrs={'class': 'form-control'}),
         required=False
     )
+    user_type = forms.ChoiceField(
+        label='用户类型',
+        choices=User.USER_TYPES,
+        widget=forms.Select(attrs={'class': 'form-control'}),
+        required=False
+    )
 
     class Meta:
         model = User

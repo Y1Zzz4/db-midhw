@@ -29,6 +29,26 @@ def login_view(request):
             messages.error(request, '用户名或密码错误')
     return render(request, 'login.html')
 
+#注册视图
+def register_view(request):
+    if request.method == 'POST':
+        form = UserForm(request.POST)
+        if form.is_valid():
+            try:
+                user = form.save(commit=False)
+                user.user_type = 'customer'  # 强制为普通用户
+                user.is_active = True
+                user.save()
+                messages.success(request, '注册成功，请登录')
+                return redirect('login')
+            except ValueError as e:
+                messages.error(request, f'注册失败：{str(e)}')
+        else:
+            messages.error(request, f'注册失败，请检查输入：{form.errors}')
+    else:
+        form = UserForm(initial={'user_type': 'customer'})
+    return render(request, 'register.html', {'form': form})
+
 # 主页视图（需登录）
 @login_required
 def home(request):
@@ -73,6 +93,28 @@ def edit_user(request, user_id):
         else:
             messages.error(request, f'更新失败，请检查输入：{form.errors}')
     return render(request, 'edit_user.html', {'form': form, 'user': user})
+
+#个人信息编辑
+@login_required
+def edit_profile(request):
+    if request.user.user_type not in ['customer', 'admin']:
+        messages.error(request, '无权限编辑个人资料')
+        return redirect('home')
+    form = UserForm(request.POST or None, instance=request.user)
+    if request.method == 'POST':
+        if form.is_valid():
+            try:
+                user = form.save(commit=False)
+                user.user_type = request.user.user_type
+                user.username = request.user.username
+                user.save()
+                messages.success(request, '个人资料更新成功')
+                return redirect('home')
+            except ValueError as e:
+                messages.error(request, f'更新失败：{str(e)}')
+        else:
+            messages.error(request, f'更新失败，请检查输入：{form.errors}')
+    return render(request, 'edit_profile.html', {'form': form})
 
 # 图书管理（仅管理员）
 @login_required
